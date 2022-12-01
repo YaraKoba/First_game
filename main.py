@@ -5,26 +5,47 @@ import random
 class MoveStars:
     def __init__(self, w, h, sur):
         self.surface = sur
-        self.x_speed = 4
+        self.x_speed = 0
         self.y_speed = 0
+        self.all_speed = 0
+        self.max_speed = 40
         self.WITHE = (255, 255, 255)
         self.BLUE = (120, 100, 190)
+        self.speed_x_middle = 0
+        self.tmp_mouse_pos = 0
         self.W = w
         self.H = h
         self.star_pos = {num: [random.randint(1, w), random.randint(1, h)] for num in range(100)}
 
     def physics_fly(self, mouse_y):
-        if mouse_y > self.H / 2:  # Самолетик летит ВВЕРХ!
-            if self.y_speed < 10:
-                self.y_speed += mouse_y / (self.H / 2) * 0.02
-            if self.x_speed > 0:
-                self.x_speed -= mouse_y / (self.H / 2) * 0.02
-        if mouse_y < self.H / 2:  # Самолетик летит ВНИЗ!
-            if self.y_speed > -10 and mouse_y != 0:
-                self.y_speed -= (self.H / 2) / mouse_y * 0.02
-            if self.x_speed < 30 and mouse_y != 0:
-                self.x_speed += (self.H / 2) / mouse_y * 0.02
-
+        print(self.all_speed, str(self.x_speed)[:-12], str(self.y_speed)[:-12])
+        if self.tmp_mouse_pos <= self.H / 2 < mouse_y:
+            self.speed_x_middle = self.x_speed
+        self.tmp_mouse_pos = mouse_y
+        if mouse_y > self.H / 2:  # Угол атаки +
+            if self.y_speed < 0:
+                if self.all_speed < self.max_speed:
+                    self.all_speed += (mouse_y - self.H / 2) / (self.H / 2) * 0.09
+                self.y_speed = (mouse_y - self.H / 2) / (self.H / 2) * self.all_speed
+                self.x_speed = (1 - (mouse_y - self.H / 2) / (self.H / 2)) * self.all_speed
+            if self.y_speed >= 0:
+                if self.all_speed > 3:
+                    self.all_speed -= (mouse_y - self.H / 2) / (self.H / 2) * 0.09
+                self.y_speed = (mouse_y - self.H / 2) / (self.H / 2) * self.all_speed
+                self.x_speed = (1 - (mouse_y - self.H / 2) / (self.H / 2)) * self.all_speed
+        if mouse_y <= self.H / 2:  # Угол атаки -
+            if mouse_y == 0:
+                mouse_y = 1
+            if self.y_speed <= 0:
+                if self.all_speed < self.max_speed:
+                    self.all_speed += (((self.H / 2) - mouse_y) / (self.H / 2)) * 0.09
+                self.y_speed = -((((self.H / 2) - mouse_y) / (self.H / 2)) * self.all_speed)
+                self.x_speed = (1 - (((self.H / 2) - mouse_y) / (self.H / 2))) * self.all_speed
+            if self.y_speed > 0:
+                if self.all_speed > 3:
+                    self.all_speed -= (((self.H / 2) - mouse_y) / (self.H / 2)) * 0.09
+                self.y_speed = -((((self.H / 2) - mouse_y) / (self.H / 2)) * self.all_speed)
+                self.x_speed = (1 - (((self.H / 2) - mouse_y) / (self.H / 2))) * self.all_speed
 
     def draw_stars(self):
         self.surface.fill(self.BLUE)
