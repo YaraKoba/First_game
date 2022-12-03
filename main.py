@@ -16,12 +16,12 @@ class MoveStars:
         self.star_pos = {num: [random.randint(1, w), random.randint(1, h)] for num in range(self.stars)}
 
     def physics_fly(self, mouse_y):
-        x_plain = self.all_speed * 0.000009
+        x_plain = self.all_speed * 0.0009
         all_speed_top = (mouse_y - self.H / 2) / (self.H / 2) * 0.07
         all_speed_down = (((self.H / 2) - mouse_y) / (self.H / 2)) * 0.07
         y_speed_top = (mouse_y - self.H / 2) / (self.H / 2) * self.all_speed
         y_speed_down = -((((self.H / 2) - mouse_y) / (self.H / 2)) * self.all_speed)
-        x_speed_top = (1 - y_speed_top) * self.all_speed
+        x_speed = (1 - abs(self.y_speed) / self.all_speed) * self.all_speed
         x_speed_down = (1 - (((self.H / 2) - mouse_y) / (self.H / 2))) * self.all_speed
         d_turb = 0.01 * self.all_speed
         c_turb = 0.01 * self.all_speed
@@ -39,8 +39,8 @@ class MoveStars:
             if y_speed_top > self.y_speed: self.y_speed += d_turb
             elif y_speed_top <= self.y_speed: self.y_speed -= d_turb
 
-            if x_speed_top > self.x_speed: self.x_speed += d_turb
-            elif x_speed_top <= self.x_speed: self.x_speed -= d_turb
+            self.x_speed = x_speed
+            # elif x_speed_top <= self.x_speed: self.x_speed -= d_turb
 
         if mouse_y <= self.H / 2:  # Угол атаки -
 
@@ -53,8 +53,7 @@ class MoveStars:
             if y_speed_down < self.y_speed: self.y_speed -= c_turb
             elif y_speed_down > self.y_speed: self.y_speed += c_turb
 
-            if x_speed_down > self.x_speed: self.x_speed += c_turb
-            elif x_speed_down < self.x_speed: self.x_speed -= c_turb
+            self.x_speed = x_speed
 
 
 
@@ -132,5 +131,3 @@ class GameWindow:
 if __name__ == "__main__":
     x = GameWindow()
     x.main_lop()
-
-
