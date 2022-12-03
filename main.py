@@ -16,46 +16,46 @@ class MoveStars:
         self.star_pos = {num: [random.randint(1, w), random.randint(1, h)] for num in range(self.stars)}
 
     def physics_fly(self, mouse_y):
-        x_plain = self.all_speed * 0.0009
+        x_plain = self.all_speed ** 2 * 0.00001
         all_speed_top = (mouse_y - self.H / 2) / (self.H / 2) * 0.07
         all_speed_down = (((self.H / 2) - mouse_y) / (self.H / 2)) * 0.07
         y_speed_top = (mouse_y - self.H / 2) / (self.H / 2) * self.all_speed
         y_speed_down = -((((self.H / 2) - mouse_y) / (self.H / 2)) * self.all_speed)
         x_speed = (1 - abs(self.y_speed) / self.all_speed) * self.all_speed
-        x_speed_down = (1 - (((self.H / 2) - mouse_y) / (self.H / 2))) * self.all_speed
         d_turb = 0.01 * self.all_speed
         c_turb = 0.01 * self.all_speed
-        print(f'speed = {int(self.all_speed)}, x = {int(self.x_speed)}, y = {int(self.y_speed)}')
+        # print(f'speed = {int(self.all_speed)}, x = {int(self.x_speed)}, y = {int(self.y_speed)}')
         # print(d_turb, c_turb)
+        if self.all_speed <= 3:
+            if self.y_speed < -6 and mouse_y < self.H / 2:
+                self.all_speed = abs(self.y_speed)
+            elif self.y_speed > -6:
+                self.y_speed -= 0.07
+                self.x_speed += 0.001
+        else:
+            if mouse_y > self.H / 2:  # Угол атаки +
 
-        if mouse_y > self.H / 2:  # Угол атаки +
+                if self.y_speed < 0:  # Когда самолет литит вниз
+                    if 0 < self.all_speed: self.all_speed += all_speed_top - x_plain
 
-            if self.y_speed < 0:  # Когда самолет литит вниз
-                if 0 < self.all_speed < self.max_speed: self.all_speed += all_speed_top - x_plain
+                if self.y_speed >= 0:  # Когда самолет летит вверх
+                    self.all_speed -= all_speed_top + x_plain
 
-            if self.y_speed >= 0:  # Когда самолет летит вверх
-                if self.all_speed > 3: self.all_speed -= all_speed_top + x_plain
+                if y_speed_top > self.y_speed: self.y_speed += d_turb
+                elif y_speed_top <= self.y_speed: self.y_speed -= d_turb
+                self.x_speed = x_speed
 
-            if y_speed_top > self.y_speed: self.y_speed += d_turb
-            elif y_speed_top <= self.y_speed: self.y_speed -= d_turb
+            if mouse_y <= self.H / 2:  # Угол атаки -
 
-            self.x_speed = x_speed
-            # elif x_speed_top <= self.x_speed: self.x_speed -= d_turb
+                if self.y_speed <= 0:  # Когда самолет литит вниз
+                    if 0 < self.all_speed: self.all_speed += all_speed_down - x_plain
 
-        if mouse_y <= self.H / 2:  # Угол атаки -
+                if self.y_speed > 0:  # Когда самолет летит вверх
+                    if self.all_speed > 3: self.all_speed -= all_speed_down + x_plain
 
-            if self.y_speed <= 0:  # Когда самолет литит вниз
-                if 0 < self.all_speed < self.max_speed: self.all_speed += all_speed_down - x_plain
-
-            if self.y_speed > 0:  # Когда самолет летит вверх
-                if self.all_speed > 3: self.all_speed -= all_speed_down + x_plain
-
-            if y_speed_down < self.y_speed: self.y_speed -= c_turb
-            elif y_speed_down > self.y_speed: self.y_speed += c_turb
-
-            self.x_speed = x_speed
-
-
+                if y_speed_down < self.y_speed: self.y_speed -= c_turb
+                elif y_speed_down > self.y_speed: self.y_speed += c_turb
+                self.x_speed = x_speed
 
     def draw_stars(self):
         for star in range(self.stars):
@@ -92,10 +92,42 @@ class Planer:
 
     def show_planer(self, mouse_pos, mov: MoveStars):
         # print((mov.y_speed + 40) / (mov.all_speed + 40))
-        corner = int((mov.y_speed + 40) / (mov.all_speed + 40) * 180)
+        test1 = (mov.y_speed + 40) / (mov.all_speed + 40)
+        corner = test1 * 180
         x = pygame.transform.rotate(self.planer_img, corner)
         self.sc.blit(x, self.rect)
 
+
+class Text:
+    def __init__(self, w, h, top_height):
+        self.w = w
+        self.h = h
+        self.k = 0
+        self.speed = 0
+        self.height = 0
+        self.top_height = top_height
+        self.black = (0, 0, 0)
+        self.white = (255, 215, 226)
+        self.font_header = pygame.font.Font('fonts/PressStart2P-Regular.ttf', 30)
+        self.font_params = pygame.font.Font('fonts/PressStart2P-Regular.ttf', 20)
+
+    def header_text(self, sc):
+        sc_text = self.font_header.render('2D FLY', True, self.white)
+        pos_text = sc_text.get_rect(center=(self.w * 0.1, self.h * 0.1))
+        sc.blit(sc_text, pos_text)
+
+    def fly_params(self, y_speed, x_speed, sc):
+        self.k += 1
+        if self.k % 2 == 0:
+            self.top_height = self.top_height + (y_speed * 0.036)
+            self.height = int(self.top_height)
+            self.speed = int((x_speed ** 2 + y_speed ** 2) ** 0.5 * 3.6)
+        sc_speed = self.font_params.render(f'speed - {self.speed}', True, self.white)
+        sc_height = self.font_params.render(f'height - {self.height}', True, self.white)
+        pos_speed = sc_speed.get_rect(center=(self.w * 0.1, self.h * 0.8))
+        pos_height = sc_height.get_rect(center=(self.w * 0.1, self.h * 0.9))
+        sc.blit(sc_speed, pos_speed)
+        sc.blit(sc_height, pos_height)
 
 
 class GameWindow:
@@ -103,10 +135,12 @@ class GameWindow:
         pygame.init()
         self.W = 1500
         self.H = 600
+        self.top_height = 1000
         self.color_bg = (120, 100, 190)
         self.mouse_y = self.H / 2
         self.surface = pygame.display.set_mode((self.W, self.H))
         pygame.display.set_caption('Fly GAME')
+        self.text = Text(self.W, self.H, self.top_height)
         self.planer = Planer(self.W, self.H, self.surface)
         self.stars = MoveStars(self.W, self.H, self.surface)
         self.cloock = pygame.time.Clock()
@@ -123,6 +157,8 @@ class GameWindow:
             self.stars.physics_fly(self.mouse_y)
             self.stars.draw_stars()
             self.planer.show_planer(self.mouse_y, self.stars)
+            self.text.header_text(self.surface)
+            self.text.fly_params(self.stars.y_speed, self.stars.x_speed, self.surface)
             pygame.display.update()
 
             self.cloock.tick(60)
