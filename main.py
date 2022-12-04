@@ -16,7 +16,7 @@ class MoveStars:
         self.star_pos = {num: [random.randint(1, w), random.randint(1, h)] for num in range(self.stars)}
 
     def physics_fly(self, mouse_y):
-        x_plain = self.all_speed ** 2 * 0.00001
+        x_plain = self.all_speed ** 2 * 0.00004
         all_speed_top = (mouse_y - self.H / 2) / (self.H / 2) * 0.07
         all_speed_down = (((self.H / 2) - mouse_y) / (self.H / 2)) * 0.07
         y_speed_top = (mouse_y - self.H / 2) / (self.H / 2) * self.all_speed
@@ -26,10 +26,10 @@ class MoveStars:
         c_turb = 0.01 * self.all_speed
         # print(f'speed = {int(self.all_speed)}, x = {int(self.x_speed)}, y = {int(self.y_speed)}')
         # print(d_turb, c_turb)
-        if self.all_speed <= 3:
-            if self.y_speed < -6 and mouse_y < self.H / 2:
+        if self.all_speed <= 10:
+            if self.y_speed < -15 and mouse_y < self.H / 2:
                 self.all_speed = abs(self.y_speed)
-            elif self.y_speed > -6:
+            elif self.y_speed > -15:
                 self.y_speed -= 0.07
                 self.x_speed += 0.001
         else:
@@ -83,18 +83,23 @@ class Map:
 class Planer:
     def __init__(self, width, height, sc):
         green = (210, 10, 120)
+        self.corner = 0
+        self.n = 0
+        self.width = width
         self.planer_img = pygame.image.load('plain.png').convert_alpha()
         self.planer_img = pygame.transform.scale(self.planer_img, (200, 100))
         self.planer_img = pygame.transform.rotate(self.planer_img, -90)
-        self.h = height
+        self.height = height
         self.sc = sc
         self.rect = self.planer_img.get_rect(center=(width / 2, height / 2))
 
     def show_planer(self, mouse_pos, mov: MoveStars):
-        # print((mov.y_speed + 40) / (mov.all_speed + 40))
-        test1 = (mov.y_speed + 40) / (mov.all_speed + 40)
-        corner = test1 * 180
-        x = pygame.transform.rotate(self.planer_img, corner)
+        print(mov.all_speed)
+        if self.n % 2 == 0 and (mouse_pos / self.height * 180) - self.corner > 1:
+            self.corner += mov.all_speed * 0.052
+        elif self.n % 2 == 0 and self.corner - (mouse_pos / self.height * 180) > 1:
+            self.corner -= mov.all_speed * 0.052
+        x = pygame.transform.rotate(self.planer_img, self.corner)
         self.sc.blit(x, self.rect)
 
 
