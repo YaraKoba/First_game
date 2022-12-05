@@ -81,6 +81,10 @@ class Map:
         self.w = w
         self.h = h
         self.gr_height = 0
+        self.num_line = 3
+        coord_gen = (x_coord for x_coord in range(0, self.w, self.w // self.num_line))
+        x_coord = iter(coord_gen)
+        self.line = {num + 1: next(x_coord) for num in range(self.num_line)}
 
     def draw_ground(self, h_planer, speed):
         if h_planer < 0:
@@ -88,11 +92,16 @@ class Map:
         elif h_planer < 30:
             gr = pygame.Surface((self.w, (30 / 0.046) - (h_planer / 0.046)))
             line = pygame.Surface((50, (30 / 0.046) - (h_planer / 0.046) - 0.1))
-            line.fill((255, 255, 255))
-            rect_speed = gr.get_rect(centerx=self.w, centery=self.h)
+            line.fill((255, 120, 0))
+            rect_speed = gr.get_rect(centerx=self.w/2, centery=self.h)
             rect_gr = gr.get_rect(centerx=(self.w/2), centery=self.h)
             self.sc.blit(gr, rect_gr)
-            self.sc.blit(line, rect_speed)
+            for line_num in self.line:
+                if self.line[line_num] < 0:
+                    self.line[line_num] = self.w
+                self.line[line_num] -= speed
+                new = rect_speed.move(self.line[line_num], 0)
+                self.sc.blit(line, new)
 
 
 class Planer:
@@ -131,7 +140,7 @@ class Text:
 
     def header_text(self, sc):
         sc_text = self.font_header.render('2D FLY', True, self.white)
-        pos_text = sc_text.get_rect(center=(self.w * 0.01, self.h * 0.03))
+        pos_text = sc_text.get_rect(center=(self.w * 0.1, self.h * 0.1))
         sc.blit(sc_text, pos_text)
 
     def play_button(self, sc):
@@ -189,7 +198,7 @@ class GameWindow:
             self.stars.physics_fly(self.mouse_y)
             self.stars.draw_stars()
             self.planer.show_planer(self.mouse_y, self.stars)
-            if self.ground.draw_ground(self.text.top_height_plain, self.text.speed):
+            if self.ground.draw_ground(self.text.top_height_plain, self.stars.x_speed):
                 print('game_over')
                 self.surface.fill(self.color_bg)
                 return False
@@ -202,6 +211,8 @@ class GameWindow:
 
 class Menu(GameWindow):
     def menu_lop(self):
+        self.surface.fill(self.color_bg)
+        self.text.play_button(self.surface)
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
