@@ -1,5 +1,6 @@
 import pygame
 import random
+import math
 
 
 class MoveStars:
@@ -8,54 +9,86 @@ class MoveStars:
         self.surface = sur
         self.x_speed = 0
         self.y_speed = 0
-        self.all_speed = 50
+        self.all_speed = 30
         self.max_speed = 40
         self.WITHE = (255, 255, 255)
         self.W = w
         self.H = h
         self.star_pos = {num: [random.randint(1, w), random.randint(1, h)] for num in range(self.stars)}
+        self.pi = math.pi * 2
 
     def physics_fly(self, mouse_y):
-        x_plain = self.all_speed ** 2 * 0.00004
-        all_speed_top = (mouse_y - self.H / 2) / (self.H / 2) * 0.07
-        all_speed_down = (((self.H / 2) - mouse_y) / (self.H / 2)) * 0.07
-        y_speed_top = (mouse_y - self.H / 2) / (self.H / 2) * self.all_speed
-        y_speed_down = -((((self.H / 2) - mouse_y) / (self.H / 2)) * self.all_speed)
-        x_speed = (1 - abs(self.y_speed) / self.all_speed) * self.all_speed
-        d_turb = 0.01 * self.all_speed
-        c_turb = 0.01 * self.all_speed
-        # print(f'speed = {int(self.all_speed)}, x = {int(self.x_speed)}, y = {int(self.y_speed)}')
+        if mouse_y > self.H // 2:  # Мышка в НИЖНЕЙ половине экрана
+            rot_speed = self.all_speed * (mouse_y - self.H / 2) / (self.H / 2) * 0.0004
+            self.pi += rot_speed * math.pi
+            self.y_speed = self.all_speed * math.sin(self.pi)
+            self.x_speed = self.all_speed * math.cos(self.pi)
+        if mouse_y < self.H // 2:  # Мышка в ВЕРХНЕЙ половине экрана
+            rot_speed = self.all_speed * (((self.H / 2) - mouse_y) / (self.H / 2)) * 0.0004
+            self.pi -= rot_speed * math.pi
+            self.y_speed = self.all_speed * math.sin(self.pi)
+            self.x_speed = self.all_speed * math.cos(self.pi)
+        if self.pi <= 0:
+            self.pi = math.pi * 2
+        elif self.pi >= math.pi * 2:
+            self.pi = 0
+        if 0 <= math.degrees(self.pi) <= 180:
+            degree = math.degrees(self.pi)
+            corn = degree / 90 if degree <= 90 else (180 - degree) / 90
+            self.all_speed -= corn * 0.1
+        if 180 < math.degrees(self.pi) <= 360:
+            degree = math.degrees(self.pi)
+            corn = degree / 270 if degree <= 270 else (360 - degree) / 270
+            self.all_speed += corn * 0.1
+        # print(self.x_speed, self.y_speed, math.degrees(self.pi))
+
+        # x_plain = self.all_speed ** 2 * 0.00004
+        # all_speed_top = (mouse_y - self.H / 2) / (self.H / 2) * 0.07
+        # all_speed_down = (((self.H / 2) - mouse_y) / (self.H / 2)) * 0.07
+        # y_speed_top = (mouse_y - self.H / 2) / (self.H / 2) * self.all_speed
+        # y_speed_down = -((((self.H / 2) - mouse_y) / (self.H / 2)) * self.all_speed)
+        # x_speed_top = (1 - abs(self.y_speed) / self.all_speed) * self.all_speed
+        # print(self.all_speed * (mouse_y - self.H / 2) / (self.H / 2))
+        # d_turb = 0.01 * self.all_speed * (mouse_y - self.H / 2) / (self.H / 2)
+        # c_turb = 0.01 * self.all_speed * (((self.H / 2) - mouse_y) / (self.H / 2))
+        # # print(f'speed = {int(self.all_speed)}, x = {int(self.x_speed)}, y = {int(self.y_speed)}')
         # print(d_turb, c_turb)
-        if self.all_speed <= 10:
-            if self.y_speed < -10 and mouse_y < self.H / 2:
-                self.all_speed = abs(self.y_speed)
-            elif self.y_speed > -10:
-                self.y_speed -= 0.07
-                self.x_speed += 0.001
-        else:
-            if mouse_y > self.H / 2:  # Угол атаки +
-
-                if self.y_speed < 0:  # Когда самолет литит вниз
-                    if 0 < self.all_speed: self.all_speed += all_speed_top - x_plain
-
-                if self.y_speed >= 0:  # Когда самолет летит вверх
-                    self.all_speed -= all_speed_top + x_plain
-
-                if y_speed_top > self.y_speed: self.y_speed += d_turb
-                elif y_speed_top <= self.y_speed: self.y_speed -= d_turb
-                self.x_speed = x_speed
-
-            if mouse_y <= self.H / 2:  # Угол атаки -
-
-                if self.y_speed <= 0:  # Когда самолет литит вниз
-                    if 0 < self.all_speed: self.all_speed += all_speed_down - x_plain
-
-                if self.y_speed > 0:  # Когда самолет летит вверх
-                    if self.all_speed > 3: self.all_speed -= all_speed_down + x_plain
-
-                if y_speed_down < self.y_speed: self.y_speed -= c_turb
-                elif y_speed_down > self.y_speed: self.y_speed += c_turb
-                self.x_speed = x_speed
+        # if self.all_speed <= 10:
+        #     if self.y_speed < -10 and mouse_y < self.H / 2:
+        #         self.all_speed = abs(self.y_speed)
+        #     elif self.y_speed > -10:
+        #         self.y_speed -= 0.07
+        #         self.x_speed += 0.001
+        # else:
+        #     if mouse_y > self.H / 2:  # Угол атаки +
+        #
+        #         if self.y_speed < 0:  # Когда самолет литит вниз
+        #             if 0 < self.all_speed:
+        #                 self.all_speed += all_speed_top - x_plain
+        #
+        #         if self.y_speed >= 0:  # Когда самолет летит вверх
+        #             self.all_speed -= all_speed_top + x_plain
+        #
+        #         # print(self.all_speed, self.x_speed, self.y_speed)
+        #         if self.x_speed > 0:
+        #             self.y_speed += d_turb
+        #             self.x_speed = x_speed_top
+        #         if self.x_speed < 0:
+        #             print('tut')
+        #             self.y_speed -= d_turb
+        #             self.x_speed -= d_turb
+        #
+        #     if mouse_y <= self.H / 2:  # Угол атаки -
+        #
+        #         if self.y_speed <= 0:  # Когда самолет литит вниз
+        #             if 0 < self.all_speed: self.all_speed += all_speed_down - x_plain
+        #
+        #         if self.y_speed > 0:  # Когда самолет летит вверх
+        #             if self.all_speed > 3: self.all_speed -= all_speed_down + x_plain
+        #
+        #         if self.x_speed > 2: self.y_speed -= c_turb
+        #         # elif y_speed_down > self.y_speed: self.y_speed += c_turb
+        #         self.x_speed = x_speed_top
 
     def draw_stars(self):
         for star in range(self.stars):
@@ -112,18 +145,20 @@ class Planer:
         self.width = width
         self.planer_img = pygame.image.load('plain.png').convert_alpha()
         self.planer_img = pygame.transform.scale(self.planer_img, (150, 75))
-        self.planer_img = pygame.transform.rotate(self.planer_img, -90)
+        self.planer_img = pygame.transform.rotate(self.planer_img, 0)
         self.height = height
         self.sc = sc
         self.rect = self.planer_img.get_rect(center=(width / 2, height / 2))
 
     def show_planer(self, mouse_pos, mov: MoveStars):
-        if self.n % 2 == 0 and (mouse_pos / self.height * 180) - self.corner > 1:
-            self.corner += mov.all_speed * 0.052
-        elif self.n % 2 == 0 and self.corner - (mouse_pos / self.height * 180) > 1:
-            self.corner -= mov.all_speed * 0.052
-        x = pygame.transform.rotate(self.planer_img, self.corner)
-        self.sc.blit(x, self.rect)
+        corner = 90
+        if self.n % 2 == 0:
+            try:
+                corner = math.degrees(mov.pi)
+            except ZeroDivisionError:
+                corner = 0 if mov.y_speed < 0 else 180
+        turn_planer = pygame.transform.rotate(self.planer_img, corner)
+        self.sc.blit(turn_planer, self.rect)
 
 
 class Text:
@@ -175,7 +210,7 @@ class GameWindow:
         pygame.init()
         self.W = 1500
         self.H = 600
-        self.top_height = 100
+        self.top_height = 1000
         self.color_bg = (120, 100, 190)
         self.mouse_y = self.H / 2
         self.surface = pygame.display.set_mode((self.W, self.H))
@@ -222,7 +257,7 @@ class Menu(GameWindow):
                     pos = self.text.play_button(self.surface)
                     p_r = event.pos
                     if pos[0] - p_r[0] < pos[2] and 0 < p_r[1] - pos[1] < pos[3]:
-                        self.text.top_height_plain = 100
+                        self.text.top_height_plain = 1000
                         if not self.main_lop():
                             self.text.game_over(self.surface)
 
