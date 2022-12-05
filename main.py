@@ -18,31 +18,47 @@ class MoveStars:
         self.pi = math.pi * 2
 
     def physics_fly(self, mouse_y):
-        if mouse_y > self.H // 2:  # Мышка в НИЖНЕЙ половине экрана
-            rot_speed = self.all_speed * (mouse_y - self.H / 2) / (self.H / 2) * 0.0004
-            self.pi += rot_speed * math.pi
-            self.y_speed = self.all_speed * math.sin(self.pi)
-            self.x_speed = self.all_speed * math.cos(self.pi)
-        if mouse_y < self.H // 2:  # Мышка в ВЕРХНЕЙ половине экрана
-            rot_speed = self.all_speed * (((self.H / 2) - mouse_y) / (self.H / 2)) * 0.0004
-            self.pi -= rot_speed * math.pi
-            self.y_speed = self.all_speed * math.sin(self.pi)
-            self.x_speed = self.all_speed * math.cos(self.pi)
-        if self.pi <= 0:
-            self.pi = math.pi * 2
-        elif self.pi >= math.pi * 2:
-            self.pi = 0
-        if 0 <= math.degrees(self.pi) <= 180:
-            degree = math.degrees(self.pi)
-            corn = degree / 90 if degree <= 90 else (180 - degree) / 90
-            self.all_speed -= corn * 0.1
-        if 180 < math.degrees(self.pi) <= 360:
-            degree = math.degrees(self.pi)
-            corn = degree / 270 if degree <= 270 else (360 - degree) / 270
-            self.all_speed += corn * 0.1
+        x_plain = self.all_speed ** 2 * 0.000008
+        print(int(math.degrees(self.pi)), self.all_speed)
+
+        if self.all_speed < 6:
+            if self.y_speed < -5:
+                rot_speed = 0.01
+                self.pi -= rot_speed * math.pi
+                self.y_speed = -5
+                self.x_speed = math.cos(self.pi)
+                if int(math.degrees(self.pi)) < -40:
+                    self.pi = math.radians(320)
+                    self.all_speed = abs(self.y_speed) + 1
+            else:
+                self.y_speed -= 0.07
+
+        else:
+            if mouse_y > self.H // 2:  # Мышка в НИЖНЕЙ половине экрана
+                rot_speed = self.all_speed * (mouse_y - self.H / 2) / (self.H / 2) * 0.0004
+                self.pi += rot_speed * math.pi
+                self.y_speed = self.all_speed * math.sin(self.pi)
+                self.x_speed = self.all_speed * math.cos(self.pi)
+            if mouse_y < self.H // 2:  # Мышка в ВЕРХНЕЙ половине экрана
+                rot_speed = self.all_speed * (((self.H / 2) - mouse_y) / (self.H / 2)) * 0.0002
+                self.pi -= rot_speed * math.pi
+                self.y_speed = self.all_speed * math.sin(self.pi)
+                self.x_speed = self.all_speed * math.cos(self.pi)
+            if 0 <= math.degrees(self.pi) <= 180:
+                degree = math.degrees(self.pi)
+                corn = degree / 90 if degree <= 90 else (180 - degree) / 90
+                self.all_speed -= corn * 0.1 + x_plain
+            if 180 < math.degrees(self.pi) <= 360:
+                degree = math.degrees(self.pi)
+                corn = degree / 270 if degree <= 270 else (360 - degree) / 270
+                self.all_speed += corn * 0.1 - x_plain
+            if self.pi <= 0:
+                self.pi = math.pi * 2
+            elif self.pi >= math.pi * 2:
+                self.pi = 0
         # print(self.x_speed, self.y_speed, math.degrees(self.pi))
 
-        # x_plain = self.all_speed ** 2 * 0.00004
+
         # all_speed_top = (mouse_y - self.H / 2) / (self.H / 2) * 0.07
         # all_speed_down = (((self.H / 2) - mouse_y) / (self.H / 2)) * 0.07
         # y_speed_top = (mouse_y - self.H / 2) / (self.H / 2) * self.all_speed
