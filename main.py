@@ -1,7 +1,7 @@
 import pygame
 import random
 import math
-from objects import PointCoins
+from objects import PointCoins, Groups
 
 
 class MoveStars:
@@ -16,9 +16,6 @@ class MoveStars:
         self.WITHE = (255, 255, 255)
         self.W = w
         self.H = h
-        self.coin_img = ['pos1.png', 'pos2.png', 'pos3.png', 'pos4.png', 'pos5.png', 'pos6.png']
-        self.one_coin = PointCoins(f'image/pos1.png', self.W, self.H // 2, (60, 60))
-        self.coin_iter = self.create_coins()
         self.star_pos = {num: [random.randint(1, w), random.randint(1, h)] for num in range(self.stars)}
 
         self.pi = math.pi * 2
@@ -61,80 +58,6 @@ class MoveStars:
                 self.pi = math.pi * 2
             elif self.pi >= math.pi * 2:
                 self.pi = 0
-        # print(self.x_speed, self.y_speed, math.degrees(self.pi))
-
-
-        # all_speed_top = (mouse_y - self.H / 2) / (self.H / 2) * 0.07
-        # all_speed_down = (((self.H / 2) - mouse_y) / (self.H / 2)) * 0.07
-        # y_speed_top = (mouse_y - self.H / 2) / (self.H / 2) * self.all_speed
-        # y_speed_down = -((((self.H / 2) - mouse_y) / (self.H / 2)) * self.all_speed)
-        # x_speed_top = (1 - abs(self.y_speed) / self.all_speed) * self.all_speed
-        # print(self.all_speed * (mouse_y - self.H / 2) / (self.H / 2))
-        # d_turb = 0.01 * self.all_speed * (mouse_y - self.H / 2) / (self.H / 2)
-        # c_turb = 0.01 * self.all_speed * (((self.H / 2) - mouse_y) / (self.H / 2))
-        # # print(f'speed = {int(self.all_speed)}, x = {int(self.x_speed)}, y = {int(self.y_speed)}')
-        # print(d_turb, c_turb)
-        # if self.all_speed <= 10:
-        #     if self.y_speed < -10 and mouse_y < self.H / 2:
-        #         self.all_speed = abs(self.y_speed)
-        #     elif self.y_speed > -10:
-        #         self.y_speed -= 0.07
-        #         self.x_speed += 0.001
-        # else:
-        #     if mouse_y > self.H / 2:  # Угол атаки +
-        #
-        #         if self.y_speed < 0:  # Когда самолет литит вниз
-        #             if 0 < self.all_speed:
-        #                 self.all_speed += all_speed_top - x_plain
-        #
-        #         if self.y_speed >= 0:  # Когда самолет летит вверх
-        #             self.all_speed -= all_speed_top + x_plain
-        #
-        #         # print(self.all_speed, self.x_speed, self.y_speed)
-        #         if self.x_speed > 0:
-        #             self.y_speed += d_turb
-        #             self.x_speed = x_speed_top
-        #         if self.x_speed < 0:
-        #             print('tut')
-        #             self.y_speed -= d_turb
-        #             self.x_speed -= d_turb
-        #
-        #     if mouse_y <= self.H / 2:  # Угол атаки -
-        #
-        #         if self.y_speed <= 0:  # Когда самолет литит вниз
-        #             if 0 < self.all_speed: self.all_speed += all_speed_down - x_plain
-        #
-        #         if self.y_speed > 0:  # Когда самолет летит вверх
-        #             if self.all_speed > 3: self.all_speed -= all_speed_down + x_plain
-        #
-        #         if self.x_speed > 2: self.y_speed -= c_turb
-        #         # elif y_speed_down > self.y_speed: self.y_speed += c_turb
-        #         self.x_speed = x_speed_top
-    def create_coins(self):
-        coins = (img for img in self.coin_img)
-        return iter(coins)
-
-    def mov_coins(self):
-        self.k += 1
-        coin = self.one_coin
-        if coin.rect.x < 0:
-            coin.rect.x = self.W
-        if coin.rect.y < 0:
-            coin.rect.y = self.H
-        if coin.rect.y > self.H:
-            coin.rect.y = 0
-        coin.rect.x -= self.x_speed * 0.5
-        coin.rect.y += self.y_speed * 0.5
-        if self.k % 10 == 0:
-            self.k = 0
-            try:
-                img = next(self.coin_iter)
-            except StopIteration:
-                self.coin_iter = self.create_coins()
-                img = next(self.coin_iter)
-            self.one_coin.image = pygame.image.load(f'image/{img}').convert_alpha()
-            self.one_coin.image = pygame.transform.scale(self.one_coin.image, (70, 70))
-        self.surface.blit(coin.image, coin.rect)
 
     def draw_stars(self):
         for star in range(self.stars):
@@ -258,10 +181,12 @@ class GameWindow:
         self.mouse_y = self.H / 2
         self.surface = pygame.display.set_mode((self.W, self.H))
         pygame.display.set_caption('Fly GAME')
+        pygame.time.set_timer(pygame.USEREVENT, random.randint(10, 2000))
         self.text = Text(self.W, self.H, self.top_height)
         self.planer = Planer(self.W, self.H, self.surface)
         self.stars = MoveStars(self.W, self.H, self.surface)
         self.ground = Map(self.W, self.H, self.surface)
+        self.group = Groups(self.H, self.W)
         self.clock = pygame.time.Clock()
 
     def main_lop(self):
@@ -271,11 +196,15 @@ class GameWindow:
                     exit()
                 if event.type == pygame.MOUSEMOTION:
                     self.mouse_y = event.pos[1]
+                if event.type == pygame.USEREVENT:
+                    pygame.time.set_timer(pygame.USEREVENT, random.randint(10, 2000))
+                    self.group.create_point()
 
             self.surface.fill(self.color_bg)
             self.stars.physics_fly(self.mouse_y)
             self.stars.draw_stars()
-            self.stars.mov_coins()
+            self.group.point_group.update(self.surface, self.stars.x_speed, self.stars.y_speed, H=self.H, W=self.W)
+            # self.coins.update(self.surface, self.stars.x_speed, self.stars.y_speed, H=self.H, W=self.W)
             self.planer.show_planer(self.mouse_y, self.stars)
             if self.ground.draw_ground(self.text.top_height_plain, self.stars.x_speed):
                 print('game_over')
