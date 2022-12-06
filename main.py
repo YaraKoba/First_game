@@ -24,10 +24,11 @@ class MoveStars:
         x_plain = self.all_speed ** 2 * 0.000009
 
         if self.all_speed < 6:
-            if self.y_speed < -5:
+
+            if self.y_speed < -5: # Cваливание
                 rot_speed = 0.01
                 self.pi -= rot_speed * math.pi
-                self.y_speed = -5
+                self.y_speed -= 0.07
                 self.x_speed = math.cos(self.pi)
                 if int(math.degrees(self.pi)) < -40:
                     self.pi = math.radians(320)
@@ -150,15 +151,18 @@ class Text:
         sc.blit(sc_text, pos_text)
         return pos_text
 
-    def fly_params(self, y_speed, x_speed, sc):
+    def fly_params(self, y_speed, x_speed, sc, point):
         self.k += 1
         if self.k % 2 == 0:
             self.top_height_plain += (y_speed * 0.06)
             self.speed = int((x_speed ** 2 + y_speed ** 2) ** 0.5 * 6.6)
+        sc_point = self.font_params.render(f'points - {point}', True, self.white)
         sc_speed = self.font_params.render(f'speed - {self.speed}', True, self.white)
         sc_height = self.font_params.render(f'height - {int(self.top_height_plain)}', True, self.white)
+        pos_point = sc_point.get_rect(center=(self.w * 0.1, self.h * 0.7))
         pos_speed = sc_speed.get_rect(center=(self.w * 0.1, self.h * 0.8))
         pos_height = sc_height.get_rect(center=(self.w * 0.1, self.h * 0.9))
+        sc.blit(sc_point, pos_point)
         sc.blit(sc_speed, pos_speed)
         sc.blit(sc_height, pos_height)
 
@@ -176,6 +180,7 @@ class GameWindow:
         pygame.init()
         self.W = 1500
         self.H = 600
+        self.points = 0
         self.top_height = 1000
         self.color_bg = (120, 100, 190)
         self.mouse_y = self.H / 2
@@ -197,8 +202,16 @@ class GameWindow:
                 if event.type == pygame.MOUSEMOTION:
                     self.mouse_y = event.pos[1]
                 if event.type == pygame.USEREVENT:
-                    pygame.time.set_timer(pygame.USEREVENT, random.randint(10, 2000))
+                    print(self.points)
+                    pygame.time.set_timer(pygame.USEREVENT, random.randint(0, 1000))
                     self.group.create_point()
+                if event.type == pygame.USEREVENT+1:
+                    if event.message == 'point':
+                        self.points += 1
+                    elif event.message == 'go':
+                        self.stars.all_speed += 10
+                    else:
+                        self.stars.all_speed -= 10
 
             self.surface.fill(self.color_bg)
             self.stars.physics_fly(self.mouse_y)
@@ -211,7 +224,7 @@ class GameWindow:
                 self.surface.fill(self.color_bg)
                 return False
             self.text.header_text(self.surface)
-            self.text.fly_params(self.stars.y_speed, self.stars.x_speed, self.surface)
+            self.text.fly_params(self.stars.y_speed, self.stars.x_speed, self.surface, self.points)
             pygame.display.update()
 
             self.clock.tick(60)

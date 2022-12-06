@@ -34,6 +34,8 @@ class PointCoins(pygame.sprite.Sprite):
 
     def update(self, surface, x_speed, y_speed, **kwargs) -> None:
         self.k += 1
+        w = kwargs['W']
+        h = kwargs['H']
         if self.rect.x < - kwargs['W'] * 2:
             self.kill()
         if self.rect.x > kwargs['W'] * 2:
@@ -42,8 +44,18 @@ class PointCoins(pygame.sprite.Sprite):
             self.kill()
         if self.rect.y > kwargs['H'] * 2:
             self.kill()
-        self.rect.x -= x_speed * 0.9
-        self.rect.y += y_speed * 0.9
+        self.rect.x -= x_speed * 0.4
+        self.rect.y += y_speed
+        if (w // 2) - 80 < self.rect.x < (w // 2) + 80 and (h // 2) - 80 < self.rect.y < (h // 2) + 80:
+            if self.img == 'pos1.png':
+                pygame.event.post(pygame.event.Event(pygame.USEREVENT + 1, message='point'))
+                self.kill()
+            elif self.img == 'go.png':
+                pygame.event.post(pygame.event.Event(pygame.USEREVENT + 1, message='go'))
+                self.kill()
+            elif self.img == 'stop.png':
+                pygame.event.post(pygame.event.Event(pygame.USEREVENT + 1, message='stop'))
+                self.kill()
         if self.k % 10 == 0 and self.img == 'pos1.png':
             self.k = 0
             try:
