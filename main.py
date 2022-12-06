@@ -1,10 +1,12 @@
 import pygame
 import random
 import math
+from objects import PointCoins
 
 
 class MoveStars:
     def __init__(self, w, h, sur):
+        self.k = 0
         self.stars = 10
         self.surface = sur
         self.x_speed = 0
@@ -14,12 +16,15 @@ class MoveStars:
         self.WITHE = (255, 255, 255)
         self.W = w
         self.H = h
+        self.coin_img = ['pos1.png', 'pos2.png', 'pos3.png', 'pos4.png', 'pos5.png', 'pos6.png']
+        self.one_coin = PointCoins(f'image/pos1.png', self.W, self.H // 2, (60, 60))
+        self.coin_iter = self.create_coins()
         self.star_pos = {num: [random.randint(1, w), random.randint(1, h)] for num in range(self.stars)}
+
         self.pi = math.pi * 2
 
     def physics_fly(self, mouse_y):
-        x_plain = self.all_speed ** 2 * 0.000008
-        print(int(math.degrees(self.pi)), self.all_speed)
+        x_plain = self.all_speed ** 2 * 0.000009
 
         if self.all_speed < 6:
             if self.y_speed < -5:
@@ -105,6 +110,31 @@ class MoveStars:
         #         if self.x_speed > 2: self.y_speed -= c_turb
         #         # elif y_speed_down > self.y_speed: self.y_speed += c_turb
         #         self.x_speed = x_speed_top
+    def create_coins(self):
+        coins = (img for img in self.coin_img)
+        return iter(coins)
+
+    def mov_coins(self):
+        self.k += 1
+        coin = self.one_coin
+        if coin.rect.x < 0:
+            coin.rect.x = self.W
+        if coin.rect.y < 0:
+            coin.rect.y = self.H
+        if coin.rect.y > self.H:
+            coin.rect.y = 0
+        coin.rect.x -= self.x_speed * 0.5
+        coin.rect.y += self.y_speed * 0.5
+        if self.k % 10 == 0:
+            self.k = 0
+            try:
+                img = next(self.coin_iter)
+            except StopIteration:
+                self.coin_iter = self.create_coins()
+                img = next(self.coin_iter)
+            self.one_coin.image = pygame.image.load(f'image/{img}').convert_alpha()
+            self.one_coin.image = pygame.transform.scale(self.one_coin.image, (70, 70))
+        self.surface.blit(coin.image, coin.rect)
 
     def draw_stars(self):
         for star in range(self.stars):
@@ -116,7 +146,7 @@ class MoveStars:
             if y < 2:
                 self.star_pos[star][0] = random.randint(0, self.W)
                 self.star_pos[star][1] = self.H - 2
-            if y > 598:
+            if y > self.H:
                 self.star_pos[star][0] = random.randint(0, self.W)
                 self.star_pos[star][1] = 2
             self.star_pos[star][0] -= self.x_speed
@@ -159,7 +189,7 @@ class Planer:
         self.corner = 0
         self.n = 0
         self.width = width
-        self.planer_img = pygame.image.load('plain.png').convert_alpha()
+        self.planer_img = pygame.image.load('image/plain.png').convert_alpha()
         self.planer_img = pygame.transform.scale(self.planer_img, (150, 75))
         self.planer_img = pygame.transform.rotate(self.planer_img, 0)
         self.height = height
@@ -169,10 +199,7 @@ class Planer:
     def show_planer(self, mouse_pos, mov: MoveStars):
         corner = 90
         if self.n % 2 == 0:
-            try:
-                corner = math.degrees(mov.pi)
-            except ZeroDivisionError:
-                corner = 0 if mov.y_speed < 0 else 180
+            corner = math.degrees(mov.pi)
         turn_planer = pygame.transform.rotate(self.planer_img, corner)
         self.sc.blit(turn_planer, self.rect)
 
@@ -248,6 +275,7 @@ class GameWindow:
             self.surface.fill(self.color_bg)
             self.stars.physics_fly(self.mouse_y)
             self.stars.draw_stars()
+            self.stars.mov_coins()
             self.planer.show_planer(self.mouse_y, self.stars)
             if self.ground.draw_ground(self.text.top_height_plain, self.stars.x_speed):
                 print('game_over')
