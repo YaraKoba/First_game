@@ -8,12 +8,22 @@ class Groups:
         self.H = h
         self.point_img = ['pos1.png', 'stop.png', 'go.png']
         self.point_lst = [pygame.image.load(f'image/{img}').convert_alpha() for img in self.point_img]
+        self.fox = pygame.image.load(f'image/fox.png').convert_alpha()
         self.point_group = pygame.sprite.Group()
 
     def create_point(self):
+        size = (70, 70)
         indx = random.randint(0, 2)
         y_c = random.randint(0, self.H)
-        PointCoins(self.point_img[indx], self.point_lst[indx], self.W, y_c, self.point_group, (70, 70))
+        PointCoins(self.point_img[indx], self.point_lst[indx], self.W, y_c, self.point_group, size)
+
+    def create_fox(self, dist):
+        sch = 1
+        if 5 - int(dist // 1000) >= 1:
+            sch = 5 - int(dist // 1000)
+        if random.randint(0, sch) == 1:
+            y_c = random.randint(0, self.H)
+            PointCoins('fox.png', self.fox, self.W, y_c, self.point_group, (300, 300))
 
 
 class PointCoins(pygame.sprite.Sprite):
@@ -36,17 +46,17 @@ class PointCoins(pygame.sprite.Sprite):
         self.k += 1
         w = kwargs['W']
         h = kwargs['H']
-        if self.rect.x < - kwargs['W'] * 2:
+        if self.rect.x < - kwargs['W']:
             self.kill()
-        if self.rect.x > kwargs['W'] * 2:
+        if self.rect.x > kwargs['W']:
             self.kill()
-        if self.rect.y < - kwargs['H'] * 2:
+        if self.rect.y < - kwargs['H']:
             self.kill()
-        if self.rect.y > kwargs['H'] * 2:
+        if self.rect.y > kwargs['H']:
             self.kill()
         self.rect.x -= x_speed * 0.4
         self.rect.y += y_speed
-        if (w // 2) - 80 < self.rect.x < (w // 2) + 80 and (h // 2) - 80 < self.rect.y < (h // 2) + 80:
+        if (w // 2) - 80 < self.rect.centerx < (w // 2) + 80 and (h // 2) - 80 < self.rect.centery < (h // 2) + 80:
             if self.img == 'pos1.png':
                 pygame.event.post(pygame.event.Event(pygame.USEREVENT + 1, message='point'))
                 self.kill()
@@ -55,6 +65,9 @@ class PointCoins(pygame.sprite.Sprite):
                 self.kill()
             elif self.img == 'stop.png':
                 pygame.event.post(pygame.event.Event(pygame.USEREVENT + 1, message='stop'))
+                self.kill()
+            elif self.img == 'fox.png':
+                pygame.event.post(pygame.event.Event(pygame.USEREVENT + 1, message='fox'))
                 self.kill()
         if self.k % 10 == 0 and self.img == 'pos1.png':
             self.k = 0
