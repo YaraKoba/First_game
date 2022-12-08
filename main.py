@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import pygame
 import random
 import math
@@ -185,18 +186,25 @@ class Text:
         sc.blit(sc_text, pos_text)
 
     def change_color(self, color):
-        # print(color)
+        r, g, b = color[0], color[1], color[2]
         speed = 0.04
-        if int(self.dist//1000) + 1 <= 2 and color[0] < 255:
-            return color[0] + speed, 100, color[2]
-        elif int(self.dist//1000) + 1 < 4 and color[0] > 0 and color[1] > 0:
-            return color[0] - speed, color[1] - speed, color[2]
-        elif int(self.dist//1000) + 1 < 6 and color[2] < 255:
-            return color[0], color[1] + speed, color[2] + speed
-        elif int(self.dist//1000) + 1 > 10 and color[0] > 0 and color[1] > 0 and color[2] > 0:
-            return color[0] - speed, color[1] - speed, color[2] - speed
-        else:
-            return color
+        if int(self.dist//1000) + 1 <= 2:
+            if r < 240: r += speed
+            if g < 140: g += speed
+            if b > 55: b -= speed * 0.8
+        elif int(self.dist//1000) + 1 < 5:
+            if r > 0: r -= speed * 2
+            if g > 0: g -= speed * 2
+            if b > 55: b -= speed
+        elif int(self.dist//1000) + 1 < 7:
+            if r < 255: r += speed
+            if g < 255: g += speed * 0.9
+            if b < 255: b += speed
+        elif int(self.dist//1000) + 1 < 10:
+            if r < 240: r += speed
+            if g < 150: g += speed
+            if b < 70: b -= speed
+        return r, g, b
 
     def play_button(self, sc):
         sc_text = self.font_header.render('Start', True, self.white)
