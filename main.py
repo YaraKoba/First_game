@@ -180,9 +180,23 @@ class Text:
         self.font_params = pygame.font.Font('fonts/PressStart2P-Regular.ttf', 20)
 
     def header_text(self, sc):
-        sc_text = self.font_header.render('2D FLY', True, self.white)
+        sc_text = self.font_header.render(f'Level {int(self.dist//1000) + 1}', True, self.white)
         pos_text = sc_text.get_rect(center=(self.w * 0.1, self.h * 0.1))
         sc.blit(sc_text, pos_text)
+
+    def change_color(self, color):
+        # print(color)
+        speed = 0.04
+        if int(self.dist//1000) + 1 <= 2 and color[0] < 255:
+            return color[0] + speed, 100, color[2]
+        elif int(self.dist//1000) + 1 < 4 and color[0] > 0 and color[1] > 0:
+            return color[0] - speed, color[1] - speed, color[2]
+        elif int(self.dist//1000) + 1 < 6 and color[2] < 255:
+            return color[0], color[1] + speed, color[2] + speed
+        elif int(self.dist//1000) + 1 > 10 and color[0] > 0 and color[1] > 0 and color[2] > 0:
+            return color[0] - speed, color[1] - speed, color[2] - speed
+        else:
+            return color
 
     def play_button(self, sc):
         sc_text = self.font_header.render('Start', True, self.white)
@@ -263,6 +277,7 @@ class GameWindow:
 
     def main_lop(self):
         while True:
+            print(self.clock.get_fps())
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.stars.all_speed += 0
@@ -284,7 +299,7 @@ class GameWindow:
                         self.surface.fill(self.color_bg)
                         self.status = 'Game_over'
                         return False
-
+            self.color_bg = self.text.change_color(self.color_bg)
             self.surface.fill(self.color_bg)
             if self.mod == 'Easy':
                 self.stars.physics_fly_easy(self.mouse_y)
@@ -292,7 +307,6 @@ class GameWindow:
                 self.stars.physics_fly(self.mouse_y)
             self.stars.draw_stars()
             self.group.point_group.update(self.surface, self.stars.x_speed, self.stars.y_speed, H=self.H, W=self.W)
-            # self.coins.update(self.surface, self.stars.x_speed, self.stars.y_speed, H=self.H, W=self.W)
             self.planer.show_planer(self.mouse_y, self.stars)
             if self.ground.draw_ground(self.text.top_height_plain, self.stars.x_speed):
                 self.surface.fill(self.color_bg)
@@ -332,6 +346,7 @@ class Menu(GameWindow):
                             self.stars.all_speed = 30
                             self.text.dist = 0
                             self.points = 0
+                            self.color_bg = (120, 100, 190)
                             self.main_lop()
                     self.surface.fill(self.color_bg)
                     self.text.play_button(self.surface)

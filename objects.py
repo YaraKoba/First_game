@@ -19,8 +19,8 @@ class Groups:
 
     def create_fox(self, dist):
         sch = 1
-        if 5 - int(dist // 1000) >= 1:
-            sch = 5 - int(dist // 1000)
+        if 10 - int(dist // 1000) >= 1:
+            sch = 10 - int(dist // 1000)
         if random.randint(0, sch) == 1:
             y_c = random.randint(0, self.H)
             PointCoins('fox.png', self.fox, self.W, y_c, self.point_group, (300, 300))
