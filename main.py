@@ -2,7 +2,9 @@
 import pygame
 import random
 import math
+import score
 from objects import Groups
+from messages import FormText
 
 
 class MoveStars:
@@ -145,6 +147,27 @@ class Map:
                 new = rect_speed.move(self.line[line_num], 0)
                 self.sc.blit(line, new)
 
+    def change_color(self, color, dist):
+        r, g, b = color[0], color[1], color[2]
+        speed = 0.04
+        if int(dist//1000) + 1 <= 2:
+            if r < 240: r += speed
+            if g < 140: g += speed
+            if b > 55: b -= speed * 0.8
+        elif int(dist//1000) + 1 < 5:
+            if r > 0: r -= speed * 2
+            if g > 0: g -= speed * 2
+            if b > 55: b -= speed
+        elif int(dist//1000) + 1 < 7:
+            if r < 255: r += speed
+            if g < 255: g += speed * 0.9
+            if b < 255: b += speed
+        elif int(dist//1000) + 1 < 10:
+            if r < 240: r += speed
+            if g < 150: g += speed
+            if b < 70: b -= speed
+        return r, g, b
+
 
 class Planer:
     def __init__(self, width, height, sc):
@@ -159,171 +182,174 @@ class Planer:
         self.sc = sc
         self.rect = self.planer_img.get_rect(center=(width / 2, height / 2))
 
-    def show_planer(self, mouse_pos, mov: MoveStars):
+    def show_planer(self, pi):
         corner = 90
         if self.n % 2 == 0:
-            corner = math.degrees(mov.pi)
+            corner = math.degrees(pi)
         turn_planer = pygame.transform.rotate(self.planer_img, corner)
         self.sc.blit(turn_planer, self.rect)
 
 
-class Text:
-    def __init__(self, w, h, top_height):
-        self.w = w
-        self.h = h
-        self.k = 0
-        self.speed = 0
-        self.top_height_plain = top_height
-        self.dist = 0
-        self.black = (0, 0, 0)
-        self.white = (255, 215, 226)
-        self.font_header = pygame.font.Font('fonts/PressStart2P-Regular.ttf', 30)
-        self.font_params = pygame.font.Font('fonts/PressStart2P-Regular.ttf', 20)
-
-    def header_text(self, sc):
-        sc_text = self.font_header.render(f'Level {int(self.dist//1000) + 1}', True, self.white)
-        pos_text = sc_text.get_rect(center=(self.w * 0.1, self.h * 0.1))
-        sc.blit(sc_text, pos_text)
-
-    def change_color(self, color):
-        r, g, b = color[0], color[1], color[2]
-        speed = 0.04
-        if int(self.dist//1000) + 1 <= 2:
-            if r < 240: r += speed
-            if g < 140: g += speed
-            if b > 55: b -= speed * 0.8
-        elif int(self.dist//1000) + 1 < 5:
-            if r > 0: r -= speed * 2
-            if g > 0: g -= speed * 2
-            if b > 55: b -= speed
-        elif int(self.dist//1000) + 1 < 7:
-            if r < 255: r += speed
-            if g < 255: g += speed * 0.9
-            if b < 255: b += speed
-        elif int(self.dist//1000) + 1 < 10:
-            if r < 240: r += speed
-            if g < 150: g += speed
-            if b < 70: b -= speed
-        return r, g, b
-
-    def play_button(self, sc):
-        sc_text = self.font_header.render('Start', True, self.white)
-        pos_text = sc_text.get_rect(center=(self.w // 2, self.h // 2))
-        sc.blit(sc_text, pos_text)
-        return pos_text
-
-    def real_button(self, sc, bg):
-        sc_text = self.font_header.render('Real', True, self.white, bg)
-        pos_text = sc_text.get_rect(center=(self.w * 0.7, self.h * 0.7))
-        sc.blit(sc_text, pos_text)
-        return pos_text
-
-    def easy_button(self, sc, bg):
-        sc_text = self.font_header.render('Easy', True, self.white, bg)
-        pos_text = sc_text.get_rect(center=(self.w * 0.3, self.h * 0.7))
-        sc.blit(sc_text, pos_text)
-        return pos_text
-
-    def fly_params(self, y_speed, x_speed, sc, point):
-        self.k += 1
-        if self.k % 2 == 0:
-            self.top_height_plain += (y_speed * 0.06)
-            self.dist += x_speed * 0.06
-            self.speed = int((x_speed ** 2 + y_speed ** 2) ** 0.5 * 6.6)
-        sc_point = self.font_params.render(f'points - {point}', True, self.white)
-        sc_speed = self.font_params.render(f'speed - {self.speed}', True, self.white)
-        sc_dist = self.font_params.render(f'dist - {int(self.dist)}', True, self.white)
-        sc_height = self.font_params.render(f'height - {int(self.top_height_plain)}', True, self.white)
-        pos_point = sc_point.get_rect(center=(self.w * 0.1, self.h * 0.6))
-        pos_speed = sc_speed.get_rect(center=(self.w * 0.1, self.h * 0.7))
-        pos_dist = sc_dist.get_rect(center=(self.w * 0.1, self.h * 0.8))
-        pos_height = sc_height.get_rect(center=(self.w * 0.1, self.h * 0.9))
-        sc.blit(sc_point, pos_point)
-        sc.blit(sc_speed, pos_speed)
-        sc.blit(sc_dist, pos_dist)
-        sc.blit(sc_height, pos_height)
-
-    def game_over(self, sc, coins):
-        sc_height = self.font_params.render(f'Dist: {int(self.dist)}m', True, self.white)
-        sc_coins = self.font_params.render(f'Coins: {coins}', True, self.white)
-        sc_total = self.font_header.render(f'Total: {int(self.dist * coins * 0.5)}', True, self.white)
-        sc_game_over = self.font_header.render('Game Over', True, self.white)
-        sc_down_mouse = self.font_params.render('jast one clik', True, self.white)
-        pos_height = sc_height.get_rect(center=(self.w * 0.4, self.h * 0.5))
-        pos_coins = sc_coins.get_rect(center=(self.w * 0.6, self.h * 0.5))
-        pos_total = sc_total.get_rect(center=(self.w * 0.5, self.h * 0.7))
-        pos_game_over = sc_game_over.get_rect(center=(self.w // 2, self.h * 0.3))
-        pos_down_mouse = sc_down_mouse.get_rect(center=(self.w // 2, self.h * 0.9))
-        sc.blit(sc_height, pos_height)
-        sc.blit(sc_coins, pos_coins)
-        sc.blit(sc_total, pos_total)
-        sc.blit(sc_game_over, pos_game_over)
-        sc.blit(sc_down_mouse, pos_down_mouse)
-
+# class Text:
+#     def __init__(self, w, h, top_height):
+#         self.w = w
+#         self.h = h
+#         self.k = 0
+#         self.speed = 0
+#         self.top_height_plain = top_height
+#         self.dist = 0
+#         self.black = (0, 0, 0)
+#         self.white = (255, 215, 226)
+#         self.font_header = pygame.font.Font('fonts/PressStart2P-Regular.ttf', 30)
+#         self.font_params = pygame.font.Font('fonts/PressStart2P-Regular.ttf', 20)
+#
+#     def header_text(self, sc):
+#         sc_text = self.font_header.render(f'Level {int(self.dist//1000) + 1}', True, self.white)
+#         pos_text = sc_text.get_rect(center=(self.w * 0.1, self.h * 0.1))
+#         sc.blit(sc_text, pos_text)
+#
+#     def change_color(self, color):
+#         r, g, b = color[0], color[1], color[2]
+#         speed = 0.04
+#         if int(self.dist//1000) + 1 <= 2:
+#             if r < 240: r += speed
+#             if g < 140: g += speed
+#             if b > 55: b -= speed * 0.8
+#         elif int(self.dist//1000) + 1 < 5:
+#             if r > 0: r -= speed * 2
+#             if g > 0: g -= speed * 2
+#             if b > 55: b -= speed
+#         elif int(self.dist//1000) + 1 < 7:
+#             if r < 255: r += speed
+#             if g < 255: g += speed * 0.9
+#             if b < 255: b += speed
+#         elif int(self.dist//1000) + 1 < 10:
+#             if r < 240: r += speed
+#             if g < 150: g += speed
+#             if b < 70: b -= speed
+#         return r, g, b
+#
+#     def play_button(self, sc):
+#         sc_text = self.font_header.render('Start', True, self.white)
+#         pos_text = sc_text.get_rect(center=(self.w // 2, self.h // 2))
+#         sc.blit(sc_text, pos_text)
+#         return pos_text
+#
+#     def real_button(self, sc, bg):
+#         sc_text = self.font_header.render('Real', True, self.white, bg)
+#         pos_text = sc_text.get_rect(center=(self.w * 0.7, self.h * 0.7))
+#         sc.blit(sc_text, pos_text)
+#         return pos_text
+#
+#     def easy_button(self, sc, bg):
+#         sc_text = self.font_header.render('Easy', True, self.white, bg)
+#         pos_text = sc_text.get_rect(center=(self.w * 0.3, self.h * 0.7))
+#         sc.blit(sc_text, pos_text)
+#         return pos_text
+#
+#     def fly_params(self, y_speed, x_speed, sc, point):
+#         self.k += 1
+#         if self.k % 2 == 0:
+#             self.top_height_plain += (y_speed * 0.06)
+#             self.dist += x_speed * 0.06
+#             self.speed = int((x_speed ** 2 + y_speed ** 2) ** 0.5 * 6.6)
+#         sc_point = self.font_params.render(f'points - {point}', True, self.white)
+#         sc_speed = self.font_params.render(f'speed - {self.speed}', True, self.white)
+#         sc_dist = self.font_params.render(f'dist - {int(self.dist)}', True, self.white)
+#         sc_height = self.font_params.render(f'height - {int(self.top_height_plain)}', True, self.white)
+#         pos_point = sc_point.get_rect(center=(self.w * 0.1, self.h * 0.6))
+#         pos_speed = sc_speed.get_rect(center=(self.w * 0.1, self.h * 0.7))
+#         pos_dist = sc_dist.get_rect(center=(self.w * 0.1, self.h * 0.8))
+#         pos_height = sc_height.get_rect(center=(self.w * 0.1, self.h * 0.9))
+#         sc.blit(sc_point, pos_point)
+#         sc.blit(sc_speed, pos_speed)
+#         sc.blit(sc_dist, pos_dist)
+#         sc.blit(sc_height, pos_height)
+#
+#     def game_over(self, sc, coins):
+#         sc_height = self.font_params.render(f'Dist: {int(self.dist)}m', True, self.white)
+#         sc_coins = self.font_params.render(f'Coins: {coins}', True, self.white)
+#         sc_total = self.font_header.render(f'Total: {int(self.dist * coins * 0.5)}', True, self.white)
+#         sc_game_over = self.font_header.render('Game Over', True, self.white)
+#         sc_down_mouse = self.font_params.render('jast one clik', True, self.white)
+#         pos_height = sc_height.get_rect(center=(self.w * 0.4, self.h * 0.5))
+#         pos_coins = sc_coins.get_rect(center=(self.w * 0.6, self.h * 0.5))
+#         pos_total = sc_total.get_rect(center=(self.w * 0.5, self.h * 0.7))
+#         pos_game_over = sc_game_over.get_rect(center=(self.w // 2, self.h * 0.3))
+#         pos_down_mouse = sc_down_mouse.get_rect(center=(self.w // 2, self.h * 0.9))
+#         sc.blit(sc_height, pos_height)
+#         sc.blit(sc_coins, pos_coins)
+#         sc.blit(sc_total, pos_total)
+#         sc.blit(sc_game_over, pos_game_over)
+#         sc.blit(sc_down_mouse, pos_down_mouse)
 
 class GameWindow:
     def __init__(self):
         pygame.init()
         self.W = 1500
         self.H = 750
-        self.points = 0
-        self.top_height = 100
         self.color_bg = (120, 100, 190)
         self.bg_button = (252, 143, 2)
-        self.mouse_y = self.H / 2
-        self.mod = 'Easy'
+        self.k = 0
+        self.mod = 'easy'
         self.status = 'Normal'
         self.surface = pygame.display.set_mode((self.W, self.H))
         pygame.display.set_caption('Fly GAME')
         pygame.time.set_timer(pygame.USEREVENT, random.randint(10, 2000))
-        self.text = Text(self.W, self.H, self.top_height)
+        self.text = FormText(self.surface, self.H, self.W)
         self.planer = Planer(self.W, self.H, self.surface)
-        self.stars = MoveStars(self.W, self.H, self.surface)
-        self.ground = Map(self.W, self.H, self.surface)
+        self.map = Map(self.W, self.H, self.surface)
         self.group = Groups(self.H, self.W)
         self.clock = pygame.time.Clock()
+        self.mess = ''
 
-    def main_lop(self):
+    def main_lop(self, sco: score.Score):
         while True:
-            print(self.clock.get_fps())
+            self.k += 1
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    self.stars.all_speed += 0
                     exit()
                 if event.type == pygame.MOUSEMOTION:
-                    self.mouse_y = event.pos[1]
+                    sco.update_mouse_y(event.pos[1])
                 if event.type == pygame.USEREVENT:
                     pygame.time.set_timer(pygame.USEREVENT, random.randint(1, 1500))
                     self.group.create_point()
-                    self.group.create_fox(self.text.dist)
+                    self.group.create_fox(sco.dist)
                 if event.type == pygame.USEREVENT+1:
                     if event.message == 'point':
-                        self.points += 1
-                    elif event.message == 'go':
-                        self.stars.all_speed += 10
+                        sco.update_point()
+                    elif event.message == 'accel':
+                        sco.xy_speed += 10
                     elif event.message == 'stop':
-                        self.stars.all_speed -= 10
+                        sco.xy_speed -= 10
                     elif event.message == 'fox':
                         self.surface.fill(self.color_bg)
                         self.status = 'Game_over'
-                        return False
-            self.color_bg = self.text.change_color(self.color_bg)
+                        return sco.level, sco.dist, sco.point
+
+            if self.k % 10 == 0:
+                sco.update_dist()
+                sco.update_speed_planer()
+                sco.update_height()
+                self.k = 0
+            self.group.create_stars(sco.y_speed)
+
+            self.color_bg = self.map.change_color(self.color_bg, sco.dist)
             self.surface.fill(self.color_bg)
-            if self.mod == 'Easy':
-                self.stars.physics_fly_easy(self.mouse_y)
+            if self.mod == 'easy':
+                sco.update_xy_speed_easy(self.H)
             else:
-                self.stars.physics_fly(self.mouse_y)
-            self.stars.draw_stars()
-            self.group.point_group.update(self.surface, self.stars.x_speed, self.stars.y_speed, H=self.H, W=self.W)
-            self.planer.show_planer(self.mouse_y, self.stars)
-            if self.ground.draw_ground(self.text.top_height_plain, self.stars.x_speed):
+                sco.update_xy_speed_real(self.H)
+            self.group.point_group.update(self.surface, sco.x_speed, sco.y_speed, H=self.H, W=self.W)
+            self.group.stars_group.update(self.surface, sco.x_speed, sco.y_speed)
+            self.planer.show_planer(sco.pi)
+            if self.map.draw_ground(sco.height_now, sco.x_speed):
                 self.surface.fill(self.color_bg)
                 self.status = 'Game_over'
-                return False
-            self.text.header_text(self.surface)
-            self.text.fly_params(self.stars.y_speed, self.stars.x_speed, self.surface, self.points)
-            pygame.display.update()
+                return sco.level, sco.dist, sco.point
+            self.text.join_main(sco.level, sco.dist, sco.speed_planer, sco.height_now, sco.point)
 
+            pygame.display.update()
             self.clock.tick(60)
 
 
@@ -333,38 +359,26 @@ class Menu(GameWindow):
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     exit()
-                if self.status == 'Game_over':
-                    self.surface.fill(self.color_bg)
-                    self.text.game_over(self.surface, self.points)
-                    if event.type == pygame.MOUSEBUTTONDOWN:
-                        self.status = 'Normal'
-                else:
+                if self.status == 'Normal':
                     if event.type == pygame.MOUSEBUTTONDOWN:
                         self.surface.fill(self.color_bg)
-                        pos_start = self.text.play_button(self.surface)
-                        pos_real = self.text.real_button(self.surface, None)
-                        pos_easy = self.text.easy_button(self.surface, self.bg_button)
+                        pos_btn = self.text.join_menu(self.mod)
+                        pos_start = pos_btn[0]
+                        pos_real = pos_btn[2]
+                        pos_easy = pos_btn[1]
                         p_r = event.pos
                         if pos_easy[0] - p_r[0] < pos_easy[2] and 0 < p_r[1] - pos_easy[1] < pos_easy[3]:
-                            self.mod = 'Easy'
+                            self.mod = 'easy'
                         if pos_real[0] - p_r[0] < pos_real[2] and 0 < p_r[1] - pos_real[1] < pos_real[3]:
-                            self.mod = 'Real'
+                            self.mod = 'real'
                         elif pos_start[0] - p_r[0] < pos_start[2] and 0 < p_r[1] - pos_start[1] < pos_start[3]:
-                            self.text.top_height_plain = 100
-                            self.stars.all_speed = 30
-                            self.text.dist = 0
-                            self.points = 0
-                            self.color_bg = (120, 100, 190)
-                            self.main_lop()
+                            self.mess = self.main_lop(score.Score())
                     self.surface.fill(self.color_bg)
-                    self.text.play_button(self.surface)
-                    if self.mod == 'Easy':
-                        self.text.easy_button(self.surface, self.bg_button)
-                        self.text.real_button(self.surface, None)
-                    if self.mod == 'Real':
-                        self.text.easy_button(self.surface, None)
-                        self.text.real_button(self.surface, self.bg_button)
-
+                    self.text.join_menu(self.mod)
+                else:
+                    self.surface.fill(self.color_bg)
+                    lev, dist, point = self.mess
+                    self.text.join_game_over(lev, dist, point)
             pygame.display.update()
             self.clock.tick(30)
 

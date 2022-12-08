@@ -1,15 +1,17 @@
 import pygame
 import random
+import components as com
 
 
 class Groups:
     def __init__(self, h, w):
         self.W = w
         self.H = h
-        self.point_img = ['pos1.png', 'stop.png', 'go.png']
-        self.point_lst = [pygame.image.load(f'image/{img}').convert_alpha() for img in self.point_img]
-        self.fox = pygame.image.load(f'image/fox.png').convert_alpha()
+        self.point_img = [com.COIN_lST[0], com.STOP, com.ACCEL]
+        self.point_lst = [pygame.image.load(img).convert_alpha() for img in self.point_img]
+        self.fox = pygame.image.load(com.FOX).convert_alpha()
         self.point_group = pygame.sprite.Group()
+        self.stars_group = pygame.sprite.Group()
 
     def create_point(self):
         size = (70, 70)
@@ -23,7 +25,48 @@ class Groups:
             sch = 10 - int(dist // 1000)
         if random.randint(0, sch) == 1:
             y_c = random.randint(0, self.H)
-            PointCoins('fox.png', self.fox, self.W, y_c, self.point_group, (300, 300))
+            PointCoins(com.FOX, self.fox, self.W, y_c, self.point_group, (300, 300))
+
+    def create_stars(self, y_speed):
+        sz = random.randint(5, 15)
+        if y_speed > 0:
+            y_c = random.randint(-self.H, self.H)
+            if y_c < 0:
+                x_c = random.randint(0, self.W * 2)
+            else:
+                x_c = random.randint(self.W, self.W * 2)
+        else:
+            y_c = random.randint(0, self.H * 2)
+            if y_c > self.H:
+                x_c = random.randint(0, self.W * 2)
+            else:
+                x_c = random.randint(self.W, self.W * 2)
+        Stars(x_c, y_c, self.stars_group, (sz, sz), (self.W, self.H))
+
+
+class Stars(pygame.sprite.Sprite):
+    def __init__(self, x_c, y_c, group, size, size_window):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.Surface(size)
+        self.image = pygame.transform.scale(self.image, size)
+        self.image.fill(com.WHITE)
+        self.rect = self.image.get_rect(center=(x_c, y_c))
+        self.size = size
+        self.W, self.H = size_window
+        self.add(group)
+
+    def update(self, surface, x_speed, y_speed):
+        if self.rect.x < - self.W:
+            self.kill()
+        if self.rect.x > self.W * 2:
+            self.kill()
+        if self.rect.y < - self.H:
+            self.kill()
+        if self.rect.y > self.H * 2:
+            self.kill()
+        self.rect.x -= x_speed
+        self.rect.y += y_speed
+        surface.blit(self.image, self.rect)
 
 
 class PointCoins(pygame.sprite.Sprite):
@@ -33,7 +76,7 @@ class PointCoins(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         self.image = sc
         self.image = pygame.transform.scale(self.image, size)
-        self.coin_img = ['pos1.png', 'pos2.png', 'pos3.png', 'pos4.png', 'pos5.png', 'pos6.png']
+        self.coin_img = com.COIN_lST
         self.coin_iter = self.create_coins()
         self.rect = self.image.get_rect(center=(x_c, y_c))
         self.add(group)
@@ -57,27 +100,28 @@ class PointCoins(pygame.sprite.Sprite):
         self.rect.x -= x_speed * 0.4
         self.rect.y += y_speed
         if (w // 2) - 80 < self.rect.centerx < (w // 2) + 80 and (h // 2) - 80 < self.rect.centery < (h // 2) + 80:
-            if self.img == 'pos1.png':
+            if self.img == com.COIN_lST[0]:
                 pygame.event.post(pygame.event.Event(pygame.USEREVENT + 1, message='point'))
                 self.kill()
-            elif self.img == 'go.png':
-                pygame.event.post(pygame.event.Event(pygame.USEREVENT + 1, message='go'))
+            elif self.img == com.ACCEL:
+                pygame.event.post(pygame.event.Event(pygame.USEREVENT + 1, message='accel'))
                 self.kill()
-            elif self.img == 'stop.png':
+            elif self.img == com.STOP:
                 pygame.event.post(pygame.event.Event(pygame.USEREVENT + 1, message='stop'))
                 self.kill()
-            elif self.img == 'fox.png':
+            elif self.img == com.FOX:
                 pygame.event.post(pygame.event.Event(pygame.USEREVENT + 1, message='fox'))
                 self.kill()
-        if self.k % 10 == 0 and self.img == 'pos1.png':
+        if self.k % 10 == 0 and self.img == com.COIN_lST[0]:
             self.k = 0
             try:
                 img = next(self.coin_iter)
             except StopIteration:
                 self.coin_iter = self.create_coins()
                 img = next(self.coin_iter)
-            self.image = pygame.image.load(f'image/{img}').convert_alpha()
+            self.image = pygame.image.load(img).convert_alpha()
             self.image = pygame.transform.scale(self.image, (70, 70))
         surface.blit(self.image, self.rect)
+
 
 
