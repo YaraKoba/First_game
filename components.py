@@ -13,3 +13,6 @@ ACCEL = 'image/go.png'
 STOP = 'image/stop.png'
 FOX = 'image/fox.png'
 STAR_2 = 'image/star2.png'
+
+# Files
+DATABASE_PLAYERS = 'best_players.db'

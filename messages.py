@@ -21,6 +21,7 @@ class FormText:
         self.text_18 = Text(com.PIXEL, 18, surface)
         self.H = h
         self.W = w
+        self.name = ''
 
     def join_main(self, level, dist, speed, height, point):
         self.text_40.crate_text(f'Level {level}', (self.W * 0.5, self.H * 0.9))
@@ -39,12 +40,32 @@ class FormText:
 
     def join_menu(self, status):
         start = self.text_40.crate_text(f'START!', (self.W * 0.5, self.H * 0.3))
+        result = self.text_25.crate_text(f'Results', (self.W * 0.5, self.H * 0.7))
+        self.text_18.crate_text(f'Player - {self.name}', (self.W * 0.5, self.H * 0.4))
         if status == 'easy':
             easy = self.text_25.crate_text(f'Easy', (self.W * 0.3, self.H * 0.5), color_bg=com.ORANGE)
             real = self.text_25.crate_text(f'Real', (self.W * 0.7, self.H * 0.5))
         else:
             easy = self.text_25.crate_text(f'Easy', (self.W * 0.3, self.H * 0.5))
             real = self.text_25.crate_text(f'Real', (self.W * 0.7, self.H * 0.5), color_bg=com.ORANGE)
-        return start, easy, real
+        return start, easy, real, result
+
+    def join_input(self, key=''):
+        self.text_40.crate_text('Hello! Hho are you?', (self.W * 0.5, self.H * 0.3))
+        self.text_25.crate_text('Jast LEFT-click to DELETE ALL', (self.W * 0.5, self.H * 0.6))
+        self.text_25.crate_text('Jast RIGHT-click to CONTINUE', (self.W * 0.5, self.H * 0.7))
+        if len(self.name) < 8:
+            self.name += key
+        if key == '_backspace_':
+            self.name = ''
+        self.text_25.crate_text(self.name, (self.W * 0.5, self.H * 0.5))
+
+    def join_results(self, db_easy, db_real):
+        self.text_25.crate_text('Easy', (self.W * 0.2, self.H * 0.1))
+        self.text_25.crate_text('Real', (self.W * 0.8, self.H * 0.1))
+        for index, player in enumerate(db_easy):
+            self.text_18.crate_text(f'{index + 1} {" ".join(player)}', (self.W * 0.2, self.H * ((index + 2) / 12)))
+        for index, player in enumerate(db_real):
+            self.text_18.crate_text(f'{index + 1} {" ".join(player)}', (self.W * 0.8, self.H * ((index + 2) / 12)))
 
 

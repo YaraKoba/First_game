@@ -13,15 +13,33 @@ class Groups:
         self.point_group = pygame.sprite.Group()
         self.stars_group = pygame.sprite.Group()
 
-    def create_point(self):
+    def create_point(self, dist):
         size = (70, 70)
-        indx = random.randint(0, 2)
-        y_c = random.randint(0, self.H)
-        PointCoins(self.point_img[indx], self.point_lst[indx], self.W, y_c, self.point_group, size)
+        for indx in range(len(self.point_img)):
+            if self.point_img[indx] == com.ACCEL:
+                y_c = random.randint(0, self.H)
+                sch = 10
+                if int(dist // 1000) <= 15:
+                    sch = int(dist // 1000) + 1
+                    print(sch, end=' ')
+                if random.randint(0, sch) == 1:
+                    PointCoins(self.point_img[indx], self.point_lst[indx], self.W, y_c, self.point_group, size)
+            if self.point_img[indx] == com.STOP:
+                y_c = random.randint(0, self.H)
+                sch = 1
+                if 10 - int(dist // 1000) >= 1:
+                    sch = 10 - int(dist // 1000)
+                    print(sch)
+                if random.randint(0, sch) == 1:
+                    PointCoins(self.point_img[indx], self.point_lst[indx], self.W, y_c, self.point_group, size)
+            if self.point_img[indx] == com.COIN_lST[0]:
+                y_c = random.randint(0, self.H)
+                if random.randint(0, 1) == 1:
+                    PointCoins(self.point_img[indx], self.point_lst[indx], self.W, y_c, self.point_group, size)
 
     def create_fox(self, dist):
         sch = 1
-        if 10 - int(dist // 1000) >= 1:
+        if 10 - int(dist // 1000) >= 3:
             sch = 10 - int(dist // 1000)
         if random.randint(0, sch) == 1:
             y_c = random.randint(0, self.H)

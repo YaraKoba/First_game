@@ -1,4 +1,5 @@
 import math
+import components as com
 
 
 class Score:
@@ -7,6 +8,7 @@ class Score:
         self.dist = 0
         self.level = 0
         self.point = 0
+        self.color_bg = com.BLUE
         self.height_top = height_top
         self.height_now = height_top
         self.x_speed = 0
@@ -16,7 +18,7 @@ class Score:
         self.mouse_y = 0
 
 
-    def update_dist(self, rate=0.7):
+    def update_dist(self, rate=0.2):
         self.dist += self.x_speed * rate
         self.level = int(self.dist // 1000) + 1
 
