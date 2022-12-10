@@ -22,11 +22,13 @@ class Map:
         self.line = {num + 1: next(x_coord) for num in range(self.num_line)}
 
     def draw_ground(self, h_planer, speed):
+        h_show = 100
+        sch = 0.15
         if h_planer < 0:
             return True
-        elif h_planer < 30:
-            gr = pygame.Surface((self.w, (30 / 0.046) - (h_planer / 0.046)))
-            line = pygame.Surface((50, (30 / 0.046) - (h_planer / 0.046) - 0.1))
+        elif h_planer < h_show:
+            gr = pygame.Surface((self.w, (h_show / sch) - (h_planer / sch)))
+            line = pygame.Surface((50, (h_show / sch) - (h_planer / sch) - 0.1))
             line.fill((255, 120, 0))
             rect_speed = gr.get_rect(centerx=self.w/2, centery=self.h)
             rect_gr = gr.get_rect(centerx=(self.w/2), centery=self.h)
@@ -67,7 +69,7 @@ class Planer:
         self.n = 0
         self.width = width
         self.planer_img = pygame.image.load('image/plain.png').convert_alpha()
-        self.planer_img = pygame.transform.scale(self.planer_img, (150, 75))
+        self.planer_img = pygame.transform.scale(self.planer_img, (125, 55))
         self.planer_img = pygame.transform.rotate(self.planer_img, 0)
         self.height = height
         self.sc = sc
@@ -125,6 +127,10 @@ class GameWindow:
                     elif event.message == 'fox':
                         self.surface.fill(sco.color_bg)
                         self.status = 'Game_over'
+                        if int(sco.point * sco.dist * 0.5) > 0:
+                            self.db_players.save_result((self.text.name, int(sco.point * sco.dist * 0.5),
+                                                         date.today().strftime("%d.%m.%Y")), self.mod)
+                            self.db_players.dell_players()
                         return sco.level, sco.dist, sco.point, sco.color_bg
 
             if self.k % 10 == 0:
@@ -146,6 +152,10 @@ class GameWindow:
             if self.map.draw_ground(sco.height_now, sco.x_speed):
                 self.surface.fill(sco.color_bg)
                 self.status = 'Game_over'
+                if int(sco.point * sco.dist * 0.5) > 0:
+                    self.db_players.save_result((self.text.name, int(sco.point * sco.dist * 0.5),
+                                                 date.today().strftime("%d.%m.%Y")), self.mod)
+                    self.db_players.dell_players()
                 return sco.level, sco.dist, sco.point, sco.color_bg
             self.text.join_main(sco.level, sco.dist, sco.speed_planer, sco.height_now, sco.point)
 
@@ -155,6 +165,7 @@ class GameWindow:
 
 class Menu(GameWindow):
     def menu_lop(self):
+        self.db_players.create_tabel()
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -182,7 +193,6 @@ class Menu(GameWindow):
                     lev, dist, point, color = self.mess
                     self.surface.fill(color)
                     self.text.join_game_over(lev, dist, point)
-                    self.db_players.save_result((self.text.name, str(int(point * dist * 0.5)), date.today()), self.mod)
                     if event.type == pygame.MOUSEBUTTONDOWN:
                         self.status = 'Normal'
                 elif self.status == 'Input':
@@ -193,7 +203,7 @@ class Menu(GameWindow):
                     if event.type == pygame.MOUSEBUTTONDOWN:
                         if event.button == 1:
                             self.text.join_input('_backspace_')
-                        elif event.button == 3:
+                        elif event.button == 3 and len(self.text.name) > 2:
                             self.status = 'Normal'
                 elif self.status == 'Results':
                     self.surface.fill(com.BLUE)

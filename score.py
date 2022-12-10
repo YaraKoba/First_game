@@ -80,8 +80,8 @@ class Score:
         y_speed_top = -((self.mouse_y - h / 2) / (h / 2) * self.xy_speed) + 1
         y_speed_down = ((((h / 2) - self.mouse_y) / (h / 2)) * self.xy_speed) - 1
         x_speed = (1 - abs(self.y_speed) / self.xy_speed) * self.xy_speed
-        d_turb = 0.01 * self.xy_speed
-        c_turb = 0.01 * self.xy_speed
+        d_turb = 0.02 * self.xy_speed
+        c_turb = 0.02 * self.xy_speed
 
         if self.xy_speed <= 3:
             if self.y_speed < -5 and self.mouse_y > h / 2:
@@ -110,8 +110,3 @@ class Score:
     def update_mouse_y(self, pos):
         self.mouse_y = pos
 
-    def update_mod(self, mod):
-        self.mod = mod
-
-    def update_status(self, status):
-        self.status = status

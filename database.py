@@ -9,7 +9,7 @@ class DataBaseClient:
     def setup(self):
         self.conn = sqlite3.connect(self.filename, check_same_thread=False)
 
-    def execute_command(self, command, params):
+    def execute_command(self, command, params=()):
         if self.conn is not None:
             self.conn.execute(command, params)
             self.conn.commit()
@@ -49,29 +49,36 @@ class PlayerRecord:
         self.db.setup()
 
     def save_result(self, params, mod):
-        sql_easy = f"UPDATE easy_players SET total_res = ? WHERE name = ?"
-        sql_real = f"UPDATE real_players SET total_res = ? WHERE name = ?"
-        if mod == 'easy':
-            try:
+        print(params[0])
+        sql_update = f"UPDATE {mod}_players SET total_res = {params[1]} WHERE name = {params[0]}"
+        try:
+            if mod == 'easy':
                 self.db.execute_command(PlayerRecord.INSERT_EASY, params)
-            except sqlite3.IntegrityError:
-                self.db.execute_command(sql_easy, (params[1], params[0]))
-        else:
-            try:
+            else:
                 self.db.execute_command(PlayerRecord.INSERT_REAL, params)
-            except sqlite3.IntegrityError:
-                self.db.execute_command(sql_real, (params[1], params[0]))
+        except sqlite3.IntegrityError:
+            self.db.execute_command(sql_update)
 
     def get_players(self, mod):
-        if mod == 'easy':
-            return self.db.execute_select_command(PlayerRecord.SELECT_EASY)
-        else:
-            return self.db.execute_select_command(PlayerRecord.SELECT_REAL)
+        sql = f"SELECT * FROM {mod}_players ORDER BY total_res DESC"
+        return self.db.execute_select_command(sql)
 
     def dell_players(self):
         easy_players = self.get_players('easy')
         real_players = self.get_players('real')
         if len(easy_players) > 10:
-            self.db.execute_command("DELETE FROM easy_players WHERE total_res < ?", (easy_players[9][2]))
+            self.db.execute_command("DELETE FROM easy_players WHERE total_res < ?", (easy_players[9][1], ))
         if len(real_players) > 10:
-            self.db.execute_command("DELETE FROM real_players WHERE total_res < ?", (real_players[9][2]))
+            self.db.execute_command("DELETE FROM real_players WHERE total_res < ?", (real_players[9][1], ))
+
+    def create_tabel(self):
+        self.db.execute_command("""CREATE TABLE IF NOT EXISTS easy_players (
+                                    name text UNIQUE,
+                                    total_res INTEGER,
+                                    date text
+                                )""")
+        self.db.execute_command("""CREATE TABLE IF NOT EXISTS real_players (
+                                    name text UNIQUE,
+                                    total_res INTEGER,
+                                    date text
+                                )""")

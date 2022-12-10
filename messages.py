@@ -64,8 +64,10 @@ class FormText:
         self.text_25.crate_text('Easy', (self.W * 0.2, self.H * 0.1))
         self.text_25.crate_text('Real', (self.W * 0.8, self.H * 0.1))
         for index, player in enumerate(db_easy):
-            self.text_18.crate_text(f'{index + 1} {" ".join(player)}', (self.W * 0.2, self.H * ((index + 2) / 12)))
+            self.text_18.crate_text(f'{index + 1}. {player[0]}  {player[1]},  {player[2]}',
+                                    (self.W * 0.2, self.H * ((index + 2) / 12)))
         for index, player in enumerate(db_real):
-            self.text_18.crate_text(f'{index + 1} {" ".join(player)}', (self.W * 0.8, self.H * ((index + 2) / 12)))
+            self.text_18.crate_text(f'{index + 1} {player[0]}  {player[1]},  {player[2]}',
+                                    (self.W * 0.8, self.H * ((index + 2) / 12)))
 
 

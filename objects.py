@@ -14,14 +14,13 @@ class Groups:
         self.stars_group = pygame.sprite.Group()
 
     def create_point(self, dist):
-        size = (70, 70)
+        size = (50, 50)
         for indx in range(len(self.point_img)):
             if self.point_img[indx] == com.ACCEL:
                 y_c = random.randint(0, self.H)
                 sch = 10
                 if int(dist // 1000) <= 15:
                     sch = int(dist // 1000) + 1
-                    print(sch, end=' ')
                 if random.randint(0, sch) == 1:
                     PointCoins(self.point_img[indx], self.point_lst[indx], self.W, y_c, self.point_group, size)
             if self.point_img[indx] == com.STOP:
@@ -29,7 +28,6 @@ class Groups:
                 sch = 1
                 if 10 - int(dist // 1000) >= 1:
                     sch = 10 - int(dist // 1000)
-                    print(sch)
                 if random.randint(0, sch) == 1:
                     PointCoins(self.point_img[indx], self.point_lst[indx], self.W, y_c, self.point_group, size)
             if self.point_img[indx] == com.COIN_lST[0]:
@@ -43,10 +41,10 @@ class Groups:
             sch = 10 - int(dist // 1000)
         if random.randint(0, sch) == 1:
             y_c = random.randint(0, self.H)
-            PointCoins(com.FOX, self.fox, self.W, y_c, self.point_group, (300, 300))
+            PointCoins(com.FOX, self.fox, self.W, y_c, self.point_group, (250, 250))
 
     def create_stars(self, y_speed):
-        sz = random.randint(5, 15)
+        sz = random.randint(5, 10)
         if y_speed > 0:
             y_c = random.randint(-self.H, self.H)
             if y_c < 0:
@@ -117,7 +115,7 @@ class PointCoins(pygame.sprite.Sprite):
             self.kill()
         self.rect.x -= x_speed * 0.4
         self.rect.y += y_speed
-        if (w // 2) - 80 < self.rect.centerx < (w // 2) + 80 and (h // 2) - 80 < self.rect.centery < (h // 2) + 80:
+        if (w // 2) - 55 < self.rect.centerx < (w // 2) + 55 and (h // 2) - 55 < self.rect.centery < (h // 2) + 55:
             if self.img == com.COIN_lST[0]:
                 pygame.event.post(pygame.event.Event(pygame.USEREVENT + 1, message='point'))
                 self.kill()
