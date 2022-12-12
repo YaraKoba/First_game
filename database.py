@@ -30,17 +30,9 @@ class PlayerRecord:
         INSERT INTO easy_players (name, total_res, date) VALUES (?, ?, ?)
     """)
 
-    SELECT_EASY = ("""
-        SELECT * FROM easy_players ORDER BY total_res DESC
-    """)
-
     INSERT_REAL = ("""
         INSERT INTO real_players (name, total_res, date) VALUES (?, ?, ?)
     """)
-
-    SELECT_REAL = ("""
-            SELECT * FROM real_players ORDER BY total_res DESC
-        """)
 
     def __init__(self, database: DataBaseClient):
         self.db = database
@@ -49,15 +41,17 @@ class PlayerRecord:
         self.db.setup()
 
     def save_result(self, params, mod):
-        print(params[0])
-        sql_update = f"UPDATE {mod}_players SET total_res = {params[1]} WHERE name = {params[0]}"
+        sql_get_name = f"SELECT total_res FROM {mod}_players WHERE name = '{params[0]}'"
+        sql_update = f"UPDATE {mod}_players SET total_res = {params[1]} WHERE name = '{params[0]}'"
         try:
             if mod == 'easy':
                 self.db.execute_command(PlayerRecord.INSERT_EASY, params)
             else:
                 self.db.execute_command(PlayerRecord.INSERT_REAL, params)
         except sqlite3.IntegrityError:
-            self.db.execute_command(sql_update)
+            print(self.db.execute_select_command(sql_get_name)[0][0])
+            if params[1] > self.db.execute_select_command(sql_get_name)[0][0]:
+                self.db.execute_command(sql_update)
 
     def get_players(self, mod):
         sql = f"SELECT * FROM {mod}_players ORDER BY total_res DESC"

@@ -138,7 +138,7 @@ class GameWindow:
                 sco.update_speed_planer()
                 sco.update_height()
                 self.k = 0
-            self.group.create_stars(sco.y_speed)
+            self.group.create_stars(sco.y_speed, sco.xy_speed)
 
             sco.color_bg = self.map.change_color(sco.color_bg, sco.dist)
             self.surface.fill(sco.color_bg)

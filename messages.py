@@ -51,7 +51,7 @@ class FormText:
         return start, easy, real, result
 
     def join_input(self, key=''):
-        self.text_40.crate_text('Hello! Hho are you?', (self.W * 0.5, self.H * 0.3))
+        self.text_40.crate_text('Hello! Who are you?', (self.W * 0.5, self.H * 0.3))
         self.text_25.crate_text('Jast LEFT-click to DELETE ALL', (self.W * 0.5, self.H * 0.6))
         self.text_25.crate_text('Jast RIGHT-click to CONTINUE', (self.W * 0.5, self.H * 0.7))
         if len(self.name) < 8:

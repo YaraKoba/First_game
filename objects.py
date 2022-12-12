@@ -14,7 +14,7 @@ class Groups:
         self.stars_group = pygame.sprite.Group()
 
     def create_point(self, dist):
-        size = (50, 50)
+        size = (60, 60)
         for indx in range(len(self.point_img)):
             if self.point_img[indx] == com.ACCEL:
                 y_c = random.randint(0, self.H)
@@ -43,21 +43,22 @@ class Groups:
             y_c = random.randint(0, self.H)
             PointCoins(com.FOX, self.fox, self.W, y_c, self.point_group, (250, 250))
 
-    def create_stars(self, y_speed):
-        sz = random.randint(5, 10)
-        if y_speed > 0:
-            y_c = random.randint(-self.H, self.H)
-            if y_c < 0:
-                x_c = random.randint(0, self.W * 2)
+    def create_stars(self, y_speed, speed):
+        if len(self.stars_group.spritedict.values()) < int(speed / 2) + 1:
+            sz = random.randint(5, 10)
+            if y_speed > 0:
+                y_c = random.randint(-self.H, self.H)
+                if y_c < 0:
+                    x_c = random.randint(0, self.W * 2)
+                else:
+                    x_c = random.randint(self.W, self.W * 2)
             else:
-                x_c = random.randint(self.W, self.W * 2)
-        else:
-            y_c = random.randint(0, self.H * 2)
-            if y_c > self.H:
-                x_c = random.randint(0, self.W * 2)
-            else:
-                x_c = random.randint(self.W, self.W * 2)
-        Stars(x_c, y_c, self.stars_group, (sz, sz), (self.W, self.H))
+                y_c = random.randint(0, self.H * 2)
+                if y_c > self.H:
+                    x_c = random.randint(0, self.W * 2)
+                else:
+                    x_c = random.randint(self.W, self.W * 2)
+            Stars(x_c, y_c, self.stars_group, (sz, sz), (self.W, self.H))
 
 
 class Stars(pygame.sprite.Sprite):
